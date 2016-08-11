@@ -20,8 +20,8 @@ This is my food in my coding life.
 ## Copyright and License
 [![GPL Licence](https://badges.frapsoft.com/os/gpl/gpl.svg?v=103)](https://opensource.org/licenses/GPL-3.0/)
 
-  <one line to give the program's name and a brief idea of what it does.>
-    Copyright (C) <year>  <name of author>
+    AudioResamplerate
+    Copyright (C) 2016  AnSwErYWJ
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
