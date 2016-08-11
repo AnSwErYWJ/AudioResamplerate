@@ -3,11 +3,17 @@
 [![stable](http://badges.github.io/stability-badges/dist/stable.svg)](http://github.com/badges/stability-badges)
 
 ## Introduction
-This is my food in my coding life.
+This is an audio resamplerate program based on [Secret Rabbit Code](http://www.mega-nerd.com/SRC/index.html).
+
+## Compile and Run
+   ```
+
+   ```
+## Test
+
 
 ## Environment
-+ Ubuntu/Centos
-+ Bash Shell
++ Linux
 
 ## About me
 [![forthebadge](http://forthebadge.com/images/badges/ages-20-30.svg)](http://forthebadge.com)
