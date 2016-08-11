@@ -1,5 +1,5 @@
 /*************************************************************************
-	> File Name: test-samplerate.c
+	> File Name: resamplerate.c
 	> Author: weijie.yuan
 	> Mail: 
 	> Created Time: Fri Aug  5 16:25:02 2016
