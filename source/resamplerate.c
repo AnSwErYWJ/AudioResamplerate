@@ -17,21 +17,46 @@
 #define RATIO 48000/16000
 #define N 1024
 
+#define NOTICE "\
+-------------------------------------------------------------------------------------------------\n\
+                    AudioResamplerate  Copyright (C) 2016  AnSwErYWJ\n\
+\n\
+        This program comes with ABSOLUTELY NO WARRANTY;\n\
+        This is free software, and you are welcome to redistribute it under certain conditions.\n\
+-------------------------------------------------------------------------------------------------\n\
+"
+
 int main(int argc,const char *argv[])
 {
     SRC_DATA samplerate;
     SRC_STATE *state;
+    
     int error;
     int infd;
     int outfd;
     int counts;
-    struct timeval st;
-    size_t start;
-    size_t stop;
-    size_t end;
+
+    printf("%s\n",NOTICE);
+
+    if (argc != 3)
+    {
+        fprintf(stderr,"Usage: ./resamplerate InputFile OutputFile\n");
+        exit(EXIT_FAILURE);
+    }
 
     infd = open(argv[1], O_RDONLY);
+    if (infd == -1)
+    {
+        fprintf(stderr,"Error : open input file %s failed.\n",argv[1]);
+        exit(EXIT_FAILURE);
+    }
+    
     outfd = open(argv[2], O_WRONLY | O_CREAT, 0644);
+    if (outfd == -1)
+    {
+        fprintf(stderr,"Error : create  output file %s failed.\n",argv[2]);
+        exit(EXIT_FAILURE);
+    }
 
     short *tmpbuf = (short *)calloc(1,RATIO*N*sizeof(short));
     if (tmpbuf == NULL)
