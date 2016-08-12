@@ -37,10 +37,6 @@ int main(int argc,const char *argv[])
     if (tmpbuf == NULL)
         printf("calloc failed\n");
 
-    char *testbuf = (char *)calloc(1,RATIO*N*sizeof(char));
-    if (testbuf == NULL)
-        printf("calloc failed\n");
-
     float *inbuf = (float *)calloc(1,N*sizeof(float));
     if (inbuf == NULL)
         printf("calloc failed\n");
@@ -63,19 +59,8 @@ int main(int argc,const char *argv[])
     {
         src_short_to_float_array (tmpbuf, inbuf, counts/sizeof(short)) ;
 
-        src_float_to_BYTE_array(inbuf, testbuf, counts/sizeof(short));
-
-        src_BYTE_to_float_array(testbuf, inbuf, counts/sizeof(short));
-
-        //gettimeofday(&st,NULL);
-        //start = st.tv_sec*1000000+st.tv_usec;
-
         if ((error = src_process (state, &samplerate)))
             printf ("src_process failed : %s\n",src_strerror (error)) ;
-
-        //gettimeofday(&st,NULL);
-        //stop = st.tv_sec*1000000+st.tv_usec;
-        //end += stop - start;
 
         memset(tmpbuf,'\0',RATIO*N*sizeof(short));
         src_float_to_short_array (outbuf, tmpbuf, samplerate.output_frames_gen);
@@ -88,11 +73,7 @@ int main(int argc,const char *argv[])
 
         memset(inbuf,'\0',N*sizeof(float));
         memset(outbuf,'\0',RATIO*N*sizeof(float));
-        //printf("%ld\n",samplerate.input_frames_used);
-        //printf("%ld\n",samplerate.output_frames_gen);
     }
-
-    //printf("%ld ms \n",end/1000);
 
     close(infd);
     close(outfd);
