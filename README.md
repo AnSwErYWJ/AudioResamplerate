@@ -14,6 +14,7 @@ This is an audio resamplerate program based on [Secret Rabbit Code](http://www.m
 
 ## Environment
 + Linux
++ PCM
 
 ## About me
 [![forthebadge](http://forthebadge.com/images/badges/ages-20-30.svg)](http://forthebadge.com)
