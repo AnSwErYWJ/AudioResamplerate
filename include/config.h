@@ -1,6 +1,3 @@
-/* src/config.h.  Generated from config.h.in by configure.  */
-/* src/config.h.in.  Generated from configure.ac by autoheader.  */
-
 /* Set to 1 if the compile is GNU GCC. */
 #define COMPILER_IS_GCC 1
 
