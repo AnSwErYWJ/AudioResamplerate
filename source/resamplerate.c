@@ -8,7 +8,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-//#include <fcntl.h>
 #include <string.h>
 
 #include "samplerate.h"
@@ -27,16 +26,15 @@ static char *NOTICE = "\n\
 
 static int channels;
 static double ratio;
-//static int infd;
-//static int outfd;
-FILE *infp;
-FILE *outfp;
+static FILE *infp = NULL;
+static FILE *outfp = NULL;
 static short *tmpbuf = NULL;
 static float *inbuf = NULL;
 static float *outbuf = NULL;
-static size_t tmpSize;
 static SRC_STATE *state;
-static int error;
+
+static size_t count_in;
+static size_t count_out;
 
 static void parser(int *channels,double *ratio)
 {
@@ -67,7 +65,7 @@ static void parser(int *channels,double *ratio)
 
     /* get channels */
     *channels = iniparser_getint(ini,"params:channels",-1);
-    if (*channels == -1)
+    if (*channels <= 0)
     {
         fprintf(stderr,"Error: params:channels error!\n");
         exit(EXIT_FAILURE);
@@ -76,12 +74,11 @@ static void parser(int *channels,double *ratio)
     /* get ratio */
     double out_samrate = iniparser_getdouble(ini,"params:out_samrate",-1);
     double in_samrate = iniparser_getdouble(ini,"params:in_samrate",-1);
-    if (in_samrate == -1 || out_samrate == -1)
+    if (in_samrate <= 0 || out_samrate <= 0)
     {
         fprintf(stderr,"Error: params:samrate error!\n");
         exit(EXIT_FAILURE);
     }
-
     *ratio = out_samrate/in_samrate;
 
     /* free dirctionary */
@@ -90,22 +87,7 @@ static void parser(int *channels,double *ratio)
 
 static void init(const char *in,const char *out)
 {
-
-    /* open in and out audio */
-    /*infd = open(in, O_RDONLY);
-    if (infd == -1)
-    {
-        fprintf(stderr,"Error : open input file %s failed.\n",in);
-        exit(EXIT_FAILURE);
-    }
-
-    outfd = open(out, O_WRONLY | O_CREAT, 0644);
-    if (outfd == -1)
-    {
-        fprintf(stderr,"Error : create  output file %s failed.\n",out);
-        exit(EXIT_FAILURE);
-    }*/
-
+    /* fopen in and out audio */
     infp = fopen(in,"rb");
     if (infp == NULL)
     {
@@ -113,81 +95,91 @@ static void init(const char *in,const char *out)
         exit(EXIT_FAILURE);
     }
 
-    outfp = open(out, "wb+");
+    outfp = fopen(out, "wb+");
     if (outfp == NULL)
     {
         fprintf(stderr,"Error : create  output file %s failed.\n",out);
-        perror("fopen out");
         exit(EXIT_FAILURE);
     }
 
+    /* data items*/
+    count_in = N;
+    count_out = ((size_t)(ratio+1))*N;
+
     /* calloc memory */
-    inbuf = (float *)calloc(1,N*sizeof(float));
+    inbuf = (float *)calloc(1,count_in*sizeof(float));
     if (inbuf == NULL)
     {
         fprintf(stderr,"calloc failed\n");
         exit(EXIT_FAILURE);
     }
 
-    outbuf = (float *)calloc(1,ratio*N*sizeof(float));
+    outbuf = (float *)calloc(1,count_out*sizeof(float));
     if (outbuf == NULL)
     {
         fprintf(stderr,"calloc failed\n");
         exit(EXIT_FAILURE);
     }
 
-    tmpSize = ratio >= 1 ? ratio*N*sizeof(short): N*sizeof(short);
-
-    tmpbuf = (short *)calloc(1,tmpSize);
+    tmpbuf = (short *)calloc(1,count_out*sizeof(short));
     if (tmpbuf == NULL)
     {
         fprintf(stderr,"calloc failed\n");
         exit(EXIT_FAILURE);
     }
-
 }
 
 static void resamplerate()
 {
     SRC_DATA samplerate;
-    //int counts;
-    size_t counts;
+    int error;
 
+    /* */
     if ((state = src_new (SRC_SINC_BEST_QUALITY, channels, &error)) == NULL)
     {
         fprintf(stderr,"resample new failed");
         exit(EXIT_FAILURE);
     }
 
-    /* samplerate config*/
+    /* samplerate params config */
     samplerate.data_in = inbuf;
-    samplerate.input_frames = (long)(N);
+    samplerate.input_frames = (long)count_in;
     samplerate.data_out = outbuf;
     samplerate.end_of_input = 0;
     samplerate.src_ratio = ratio;
-    samplerate.output_frames = (long)(samplerate.src_ratio * samplerate.input_frames);
+    samplerate.output_frames = (long)count_out;
 
+    size_t nread = 0;
     //while ((counts = read(infd, tmpbuf, N*sizeof(short))) > 0)
-    while ((counts = fread(tmpbuf,tmpSize,1,infp)) > 0)
+    while ((nread = fread(tmpbuf,sizeof(short),count_in,infp)) > 0)
     {
-        src_short_to_float_array (tmpbuf, inbuf, counts/sizeof(short)) ;
+        src_short_to_float_array (tmpbuf, inbuf, nread) ;
+
+        gettimeofday(&st,NULL);
+        start = st.tv_sec*1000000+st.tv_usec;
 
         if ((error = src_process (state, &samplerate)))
             printf ("src_process failed : %s\n",src_strerror (error)) ;
 
-        memset(tmpbuf,'\0',tmpSize);
+        gettimeofday(&st,NULL);
+        stop = st.tv_sec*1000000+st.tv_usec;
+        end = stop - start + end;
+
+        memset(tmpbuf,'\0',count_out*sizeof(short));
         src_float_to_short_array (outbuf, tmpbuf, samplerate.output_frames_gen);
 
         //if (write(outfd,tmpbuf,samplerate.output_frames_gen*sizeof(short)) != samplerate.output_frames_gen*sizeof(short))
-        if ((fwrite(tmpbuf,sizeof(short),samplerate.output_frames_gen,outfp)) != (samplerate.output_frames_gen*sizeof(short)))
+        if (fwrite(tmpbuf,sizeof(short),samplerate.output_frames_gen,outfp) != samplerate.output_frames_gen)
         {
-            printf("文件写失败！\n");
+            fprintf(stderr,"fwrite failed!\n");
             exit(EXIT_FAILURE);
         }
+        //printf("%ld\n",fwrite(tmpbuf,sizeof(short)*samplerate.output_frames_gen,1,outfp));
 
-        memset(inbuf,'\0',N*sizeof(float));
-        memset(outbuf,'\0',ratio*N*sizeof(float));
+        memset(inbuf,'\0',count_in*sizeof(short));
+        memset(outbuf,'\0',count_out*sizeof(short));
     }
+    printf("%ld ms \n",end/1000);
 }
 
 static void delete()
