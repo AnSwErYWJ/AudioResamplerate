@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <fcntl.h>
+//#include <fcntl.h>
 #include <string.h>
 
 #include "samplerate.h"
@@ -27,11 +27,14 @@ static char *NOTICE = "\n\
 
 static int channels;
 static double ratio;
-static int infd;
-static int outfd;
+//static int infd;
+//static int outfd;
+FILE *infp;
+FILE *outfp;
 static short *tmpbuf = NULL;
 static float *inbuf = NULL;
 static float *outbuf = NULL;
+static size_t tmpSize;
 static SRC_STATE *state;
 static int error;
 
@@ -89,7 +92,7 @@ static void init(const char *in,const char *out)
 {
 
     /* open in and out audio */
-    infd = open(in, O_RDONLY);
+    /*infd = open(in, O_RDONLY);
     if (infd == -1)
     {
         fprintf(stderr,"Error : open input file %s failed.\n",in);
@@ -101,16 +104,24 @@ static void init(const char *in,const char *out)
     {
         fprintf(stderr,"Error : create  output file %s failed.\n",out);
         exit(EXIT_FAILURE);
-    }
+    }*/
 
-    /* calloc memory */
-    tmpbuf = (short *)calloc(1,ratio*N*sizeof(short));
-    if (tmpbuf == NULL)
+    infp = fopen(in,"rb");
+    if (infp == NULL)
     {
-        fprintf(stderr,"calloc failed\n");
+        fprintf(stderr,"Error : open input file %s failed.\n",in);
         exit(EXIT_FAILURE);
     }
 
+    outfp = open(out, "wb+");
+    if (outfp == NULL)
+    {
+        fprintf(stderr,"Error : create  output file %s failed.\n",out);
+        perror("fopen out");
+        exit(EXIT_FAILURE);
+    }
+
+    /* calloc memory */
     inbuf = (float *)calloc(1,N*sizeof(float));
     if (inbuf == NULL)
     {
@@ -125,12 +136,22 @@ static void init(const char *in,const char *out)
         exit(EXIT_FAILURE);
     }
 
+    tmpSize = ratio >= 1 ? ratio*N*sizeof(short): N*sizeof(short);
+
+    tmpbuf = (short *)calloc(1,tmpSize);
+    if (tmpbuf == NULL)
+    {
+        fprintf(stderr,"calloc failed\n");
+        exit(EXIT_FAILURE);
+    }
+
 }
 
 static void resamplerate()
 {
     SRC_DATA samplerate;
-    int counts;
+    //int counts;
+    size_t counts;
 
     if ((state = src_new (SRC_SINC_BEST_QUALITY, channels, &error)) == NULL)
     {
@@ -146,17 +167,19 @@ static void resamplerate()
     samplerate.src_ratio = ratio;
     samplerate.output_frames = (long)(samplerate.src_ratio * samplerate.input_frames);
 
-    while ((counts = read(infd, tmpbuf, N*sizeof(short))) > 0)
+    //while ((counts = read(infd, tmpbuf, N*sizeof(short))) > 0)
+    while ((counts = fread(tmpbuf,tmpSize,1,infp)) > 0)
     {
         src_short_to_float_array (tmpbuf, inbuf, counts/sizeof(short)) ;
 
         if ((error = src_process (state, &samplerate)))
             printf ("src_process failed : %s\n",src_strerror (error)) ;
 
-        memset(tmpbuf,'\0',ratio*N*sizeof(short));
+        memset(tmpbuf,'\0',tmpSize);
         src_float_to_short_array (outbuf, tmpbuf, samplerate.output_frames_gen);
 
-        if (write(outfd,tmpbuf,samplerate.output_frames_gen*sizeof(short)) != samplerate.output_frames_gen*sizeof(short))
+        //if (write(outfd,tmpbuf,samplerate.output_frames_gen*sizeof(short)) != samplerate.output_frames_gen*sizeof(short))
+        if ((fwrite(tmpbuf,sizeof(short),samplerate.output_frames_gen,outfp)) != (samplerate.output_frames_gen*sizeof(short)))
         {
             printf("文件写失败！\n");
             exit(EXIT_FAILURE);
@@ -169,8 +192,11 @@ static void resamplerate()
 
 static void delete()
 {
-    close(infd);
-    close(outfd);
+    //close(infd);
+    //close(outfd);
+
+    fclose(infp);
+    fclose(outfp);
 
     free(inbuf);
     inbuf = NULL;
