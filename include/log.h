@@ -1,6 +1,8 @@
 #ifndef LOG_H
 #define LOG_H
 
+#define PROJECT "AudioResamplerate"
+
 #define	LOG_LEVEL_VERBOSE 0
 #define	LOG_LEVEL_DEBUG   1
 #define	LOG_LEVEL_INFO    2
@@ -9,19 +11,16 @@
 
 #define LOG_LEVEL_DEFAULT LOG_LEVEL_VERBOSE
 
-
 #define DEBUG_PRINT do{}while(0)
 
 #if defined(DEBUG_PRINT)
 #define DEBUG(...)\
         do{\
             printf("%s %s\n",__TIME__,__DATE__);\
-            printf("%s:%d:%s():",__FILE__,__LINE__,__func__);\
+            printf("[%s] %s:%d:%s():",PROJECT,__FILE__,__LINE__,__func__);\
             printf(__VA_ARGS__);\
         }while(0)
 #endif
-
-
 
 void print_msg(const char *file, int line, const char *func, const char *fmt, ...);
 
