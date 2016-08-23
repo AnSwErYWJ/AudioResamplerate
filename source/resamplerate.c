@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <string.h>
 
+#include "log.h"
 #include "samplerate.h"
 #include "iniparser.h"
 
@@ -44,7 +45,7 @@ static void parser(int *channels,double *ratio)
     ini = iniparser_load("config.ini");
     if(ini == NULL)
     {
-        fprintf(stderr,"Error: can not open %s\n","../config.ini");
+        LOGE("can not open %s","../config.ini");
         exit(EXIT_FAILURE);
     }
 
@@ -54,20 +55,19 @@ static void parser(int *channels,double *ratio)
 
     if (n != 1 || strcmp(section,"params") != 0)
     {
-        fprintf(stderr,"Error: config error!\n");
+        LOGE("config error!");
         exit(EXIT_FAILURE);
     }
 
     /* print config */
-    printf("resamplerate config:\n");
+    LOGI("resamplerate config:\n");
     iniparser_dump(ini,stderr);
-    printf("\n");
 
     /* get channels */
     *channels = iniparser_getint(ini,"params:channels",-1);
     if (*channels <= 0)
     {
-        fprintf(stderr,"Error: params:channels error!\n");
+        LOGE("params:channels error!");
         exit(EXIT_FAILURE);
     }
 
@@ -76,7 +76,7 @@ static void parser(int *channels,double *ratio)
     double in_samrate = iniparser_getdouble(ini,"params:in_samrate",-1);
     if (in_samrate <= 0 || out_samrate <= 0)
     {
-        fprintf(stderr,"Error: params:samrate error!\n");
+        LOGE("params:samrate error!");
         exit(EXIT_FAILURE);
     }
     *ratio = out_samrate/in_samrate;
@@ -91,14 +91,14 @@ static void init(const char *in,const char *out)
     infp = fopen(in,"rb");
     if (infp == NULL)
     {
-        fprintf(stderr,"Error : open input file %s failed.\n",in);
+        LOGE("open input file %s failed",in);
         exit(EXIT_FAILURE);
     }
 
     outfp = fopen(out, "wb+");
     if (outfp == NULL)
     {
-        fprintf(stderr,"Error : create  output file %s failed.\n",out);
+        LOGE("create output file %s failed",out);
         exit(EXIT_FAILURE);
     }
 
@@ -110,21 +110,21 @@ static void init(const char *in,const char *out)
     inbuf = (float *)calloc(1,count_in*sizeof(float));
     if (inbuf == NULL)
     {
-        fprintf(stderr,"calloc failed\n");
+        LOGE("inbuf calloc failed");
         exit(EXIT_FAILURE);
     }
 
     outbuf = (float *)calloc(1,count_out*sizeof(float));
     if (outbuf == NULL)
     {
-        fprintf(stderr,"calloc failed\n");
+        LOGE("outbuf calloc failed");
         exit(EXIT_FAILURE);
     }
 
     tmpbuf = (short *)calloc(1,count_out*sizeof(short));
     if (tmpbuf == NULL)
     {
-        fprintf(stderr,"calloc failed\n");
+        LOGE("tmpbuf calloc failed");
         exit(EXIT_FAILURE);
     }
 }
@@ -137,7 +137,7 @@ static void resamplerate()
     /* */
     if ((state = src_new (SRC_SINC_BEST_QUALITY, channels, &error)) == NULL)
     {
-        fprintf(stderr,"resample new failed");
+        LOGE("resample new failed");
         exit(EXIT_FAILURE);
     }
 
@@ -155,38 +155,25 @@ static void resamplerate()
     {
         src_short_to_float_array (tmpbuf, inbuf, nread) ;
 
-        gettimeofday(&st,NULL);
-        start = st.tv_sec*1000000+st.tv_usec;
-
         if ((error = src_process (state, &samplerate)))
-            printf ("src_process failed : %s\n",src_strerror (error)) ;
-
-        gettimeofday(&st,NULL);
-        stop = st.tv_sec*1000000+st.tv_usec;
-        end = stop - start + end;
+            LOGE("src_process failed : %s",src_strerror (error)) ;
 
         memset(tmpbuf,'\0',count_out*sizeof(short));
         src_float_to_short_array (outbuf, tmpbuf, samplerate.output_frames_gen);
 
-        //if (write(outfd,tmpbuf,samplerate.output_frames_gen*sizeof(short)) != samplerate.output_frames_gen*sizeof(short))
         if (fwrite(tmpbuf,sizeof(short),samplerate.output_frames_gen,outfp) != samplerate.output_frames_gen)
         {
-            fprintf(stderr,"fwrite failed!\n");
+            LOGE("fwrite failed");
             exit(EXIT_FAILURE);
         }
-        //printf("%ld\n",fwrite(tmpbuf,sizeof(short)*samplerate.output_frames_gen,1,outfp));
 
         memset(inbuf,'\0',count_in*sizeof(short));
         memset(outbuf,'\0',count_out*sizeof(short));
     }
-    printf("%ld ms \n",end/1000);
 }
 
 static void delete()
 {
-    //close(infd);
-    //close(outfd);
-
     fclose(infp);
     fclose(outfp);
 
@@ -202,11 +189,11 @@ static void delete()
 
 int main(int argc,const char *argv[])
 {
-    printf("%s\n",NOTICE);
+    LOGI("%s",NOTICE);
 
     if (argc != 3)
     {
-        fprintf(stderr,"Usage: ./resamplerate InputFile OutputFile\n");
+        LOGE("Usage: ./resamplerate InputFile OutputFile");
         exit(EXIT_FAILURE);
     }
 
