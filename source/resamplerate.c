@@ -237,9 +237,10 @@ int main(int argc,const char *argv[])
 
     resamplerate();
 
-    delete();
-
+    printf("output path : %s\n",output);
     printf("successfully\n");
+
+    delete();
 
     return 0;
 }
