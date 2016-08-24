@@ -7,14 +7,13 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
 
 #include "samplerate.h"
 #include "iniparser.h"
 #include "log.h"
 
-#define N 1024
+#define N 1024 //items
 
 static char *NOTICE = "\n\
 -------------------------------------------------------------------------------------------------\n\
@@ -25,9 +24,9 @@ static char *NOTICE = "\n\
 -------------------------------------------------------------------------------------------------\n\
 ";
 
+/* ini params */
 static int channels;
 static double ratio;
-
 static char *input;
 static char *output;
 
@@ -37,14 +36,15 @@ static short *tmpbuf = NULL;
 static float *inbuf = NULL;
 static float *outbuf = NULL;
 
-static dictionary *ini;
-
-static SRC_STATE *state;
-
 static size_t count_in;
 static size_t count_out;
 
-static void parser()
+static dictionary *ini;
+static SRC_STATE *state;
+
+static int error;
+
+static void get_conf()
 {
     /* parser dictionary */
     ini = iniparser_load("config.ini");
@@ -75,10 +75,6 @@ static void parser()
         LOGE("config error!");
         exit(EXIT_FAILURE);
     }
-
-    /* print config */
-    //LOGD("\nresamplerate config:");
-    //iniparser_dump(ini,stderr);
 
     /* get channels */
     channels = iniparser_getint(ini,"audio:channels",-1);
@@ -115,9 +111,9 @@ static void parser()
     }
 }
 
-static void init()
+static void initialize()
 {
-    /* fopen in and out audio */
+    /* open in and out audio */
     infp = fopen(input,"rb");
     if (infp == NULL)
     {
@@ -157,19 +153,18 @@ static void init()
         LOGE("tmpbuf calloc failed");
         exit(EXIT_FAILURE);
     }
-}
 
-static void resamplerate()
-{
-    SRC_DATA samplerate;
-    int error;
-
-    /* */
+    /* new samplerate obj*/
     if ((state = src_new (SRC_SINC_BEST_QUALITY, channels, &error)) == NULL)
     {
         LOGE("resample new failed");
         exit(EXIT_FAILURE);
     }
+}
+
+static void resamplerate()
+{
+    SRC_DATA samplerate;
 
     /* samplerate params config */
     samplerate.data_in = inbuf;
@@ -180,7 +175,8 @@ static void resamplerate()
     samplerate.output_frames = (long)count_out;
 
     size_t nread = 0;
-    //while ((counts = read(infd, tmpbuf, N*sizeof(short))) > 0)
+
+    /* resamplerate */
     while ((nread = fread(tmpbuf,sizeof(short),count_in,infp)) > 0)
     {
         src_short_to_float_array (tmpbuf, inbuf, nread) ;
@@ -202,11 +198,13 @@ static void resamplerate()
     }
 }
 
-static void delete()
+static void clean_up()
 {
+    /* close audio file */
     fclose(infp);
     fclose(outfp);
 
+    /* free memory */
     free(inbuf);
     inbuf = NULL;
     free(outbuf);
@@ -214,6 +212,7 @@ static void delete()
     free(tmpbuf);
     tmpbuf = NULL;
 
+    /* free samplerate obj*/
     src_delete(state);
 
     /* free dirctionary */
@@ -224,23 +223,16 @@ int main(int argc,const char *argv[])
 {
     printf("%s",NOTICE);
 
-    /*if (argc != 3)
-    {
-        LOGE("Usage: ./resamplerate InputFile OutputFile");
-        exit(EXIT_FAILURE);
-    }*/
+    get_conf();
 
-    /* parser config */
-    parser();
-
-    init();
+    initialize();
 
     resamplerate();
 
     printf("output path : %s\n",output);
     printf("successfully\n");
 
-    delete();
+    clean_up();
 
     return 0;
 }

@@ -1,3 +1,15 @@
+/*-------------------------------------------------------------------------*/
+/**
+   @file    dictionary.c
+   @author  N. Devillard
+   @brief   Implements a dictionary for string variables.
+
+   This module implements a simple dictionary object, i.e. a list
+   of string/string associations. This object is useful to store e.g.
+   informations retrieved from a configuration file (ini files).
+*/
+/*--------------------------------------------------------------------------*/
+
 /*---------------------------------------------------------------------------
                                 Includes
  ---------------------------------------------------------------------------*/

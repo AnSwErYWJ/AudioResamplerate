@@ -6,8 +6,9 @@
  ************************************************************************/
 
 #include <stdio.h>
-#include "log.h"
 #include <stdarg.h>
+
+#include "log.h"
 
 void print_log(const char level, const char *fmt, ...)
 {
@@ -24,5 +25,6 @@ void print_log(const char level, const char *fmt, ...)
 
     va_end(ap);
 
+    /* log print */
     printf("[%c][%s] File:%s,Line:%d,Function:%s ## %s\n",level,__TIME__,__FILE__,__LINE__,__func__,va_buf);
 }

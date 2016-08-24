@@ -3,18 +3,40 @@
 [![stable](http://badges.github.io/stability-badges/dist/stable.svg)](http://github.com/badges/stability-badges)
 
 ## Introduction
-This is an audio resamplerate program based on [Secret Rabbit Code](http://www.mega-nerd.com/SRC/index.html).
+This is an audio resamplerate program based on [Secret Rabbit Code](http://www.mega-nerd.com/SRC/index.html) and [iniparser](http://ndevilla.free.fr/iniparser).
 
 ## Compile and Run
-   ```
+Compile with code :
+```
+make
+```
 
-   ```
-## Test
+You can modify the [**config.ini**](https://github.com/AnSwErYWJ/AudioResamplerate/blob/master/config.ini) to configure the following parameters :
+```
 
+[audio]
+channels = 1;
+in_samrate = 16000;
+out_samrate = 48000;
+
+[other]
+input_file = ./audio/S16bit-LE-16kHz-Mono.pcm;
+output_file = ./audio/out.pcm;
+```
+Then,run your program with :
+```
+sh init.sh
+```
 
 ## Environment
 + Linux
-+ PCM
++ Support for PCM audio
++ POSIX C
+
+## Todo
+- [ ] Support more audio file type.
+- [ ] Use TOML replace iniparser.
+- [ ] Clip code.
 
 ## About me
 [![forthebadge](http://forthebadge.com/images/badges/ages-20-30.svg)](http://forthebadge.com)

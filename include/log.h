@@ -13,6 +13,7 @@
 /* log print func */
 void print_log(const char level, const char *fmt, ...);
 
+/* level define */
 #define	LEVEL_VERBOSE 0
 #define	LEVEL_DEBUG   1  //develop
 #define	LEVEL_INFO    2  //release
