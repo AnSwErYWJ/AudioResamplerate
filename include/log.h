@@ -8,6 +8,11 @@
 #ifndef _LOG_H
 #define _LOG_H
 
+#define VA_SIZE 1024
+
+/* log print func */
+void print_log(const char level, const char *fmt, ...);
+
 #define	LEVEL_VERBOSE 0
 #define	LEVEL_DEBUG   1  //develop
 #define	LEVEL_INFO    2  //release
@@ -15,79 +20,82 @@
 #define	LEVEL_ERROR   4
 
 #if defined(LEVEL_VERBOSE)
-#define LOG_VERBOSE(fmt,...)\
+#define LOG_VERBOSE(...)\
         do{\
-            printf("[V][%s] File:%s,Line:%d,Function:%s ## "fmt"\n",__TIME__,__FILE__,__LINE__,__func__,##__VA_ARGS__);\
+            print_log('V', ##__VA_ARGS__);\
         }while(0)
 #endif
 
 #if defined(LEVEL_DEBUG)
-#define LOG_DEBUG(fmt,...)\
+#define LOG_DEBUG(...)\
         do{\
-            printf("[D][%s] File:%s,Line:%d,Function:%s ## "fmt"\n",__TIME__,__FILE__,__LINE__,__func__,##__VA_ARGS__);\
+            print_log('D', ##__VA_ARGS__);\
         }while(0)
 #endif
 
 #if defined(LEVEL_INFO)
-#define LOG_INFO(fmt,...)\
+#define LOG_INFO(...)\
         do{\
-            printf("[I][%s] File:%s,Line:%d,Function:%s ## "fmt"\n",__TIME__,__FILE__,__LINE__,__func__,##__VA_ARGS__);\
+            print_log('I', ##__VA_ARGS__);\
         }while(0)
 #endif
 
 #if defined(LEVEL_WARN)
-#define LOG_WRAN(fmt,...)\
+#define LOG_WRAN(...)\
         do{\
-            printf("[W][%s] File:%s,Line:%d,Function:%s ## "fmt"\n",__TIME__,__FILE__,__LINE__,__func__,##__VA_ARGS__);\
+            print_log('W', ##__VA_ARGS__);\
         }while(0)
 #endif
 
 #if defined(LEVEL_ERROR)
-#define LOG_ERROR(fmt,...)\
+#define LOG_ERROR(...)\
         do{\
-            printf("[E][%s] File:%s,Line:%d,Function:%s ## "fmt"\n",__TIME__,__FILE__,__LINE__,__func__,##__VA_ARGS__);\
+            print_log('E', ##__VA_ARGS__);\
         }while(0)
 #endif
 
-/* set log level */
-#define LEVEL_DEFAULT LEVEL_DEBUG
+//---------------------------------------------------------------------------
 
+/* set log level */
+#define LEVEL_DEFAULT LEVEL_INFO
+
+/* api for users*/
 #if LEVEL_DEFAULT == LEVEL_VERBOSE
-    #define LOGV(fmt,...) LOG_VERBOSE(fmt,__VA_ARGS__)
-    #define LOGD(fmt,...) LOG_DEBUG(fmt,__VA_ARGS__)
-    #define LOGI(fmt,...) LOG_INFO(fmt,__VA_ARGS__)
-    #define LOGW(fmt,...) LOG_WRAN(fmt,__VA_ARGS__)
-    #define LOGE(fmt,...) LOG_ERROR(fmt,__VA_ARGS__)
+    #define LOGV(...) LOG_VERBOSE(__VA_ARGS__)
+    #define LOGD(...) LOG_DEBUG(__VA_ARGS__)
+    #define LOGI(...) LOG_INFO(__VA_ARGS__)
+    #define LOGW(...) LOG_WRAN(__VA_ARGS__)
+    #define LOGE(...) LOG_ERROR(__VA_ARGS__)
 #elif LEVEL_DEFAULT == LEVEL_DEBUG
-    #define LOGV(fmt,...) do{}while(0)
-    #define LOGD(fmt,...) LOG_DEBUG(fmt,__VA_ARGS__)
-    #define LOGI(fmt,...) LOG_INFO(fmt,__VA_ARGS__)
-    #define LOGW(fmt,...) LOG_WRAN(fmt,__VA_ARGS__)
-    #define LOGE(fmt,...) LOG_ERROR(fmt,__VA_ARGS__)
+    #define LOGV(...) do{}while(0)
+    #define LOGD(...) LOG_DEBUG(__VA_ARGS__)
+    #define LOGI(...) LOG_INFO(__VA_ARGS__)
+    #define LOGW(...) LOG_WRAN(__VA_ARGS__)
+    #define LOGE(...) LOG_ERROR(__VA_ARGS__)
 #elif LEVEL_DEFAULT == LEVEL_INFO
-    #define LOGV(fmt,...) do{}while(0)
-    #define LOGD(fmt,...) do{}while(0)
-    #define LOGI(fmt,...) LOG_INFO(fmt,__VA_ARGS__)
-    #define LOGW(fmt,...) LOG_WRAN(fmt,__VA_ARGS__)
-    #define LOGE(fmt,...) LOG_ERROR(fmt,__VA_ARGS__)
+    #define LOGV(...) do{}while(0)
+    #define LOGD(...) do{}while(0)
+    #define LOGI(...) LOG_INFO(__VA_ARGS__)
+    #define LOGW(...) LOG_WRAN(__VA_ARGS__)
+    #define LOGE(...) LOG_ERROR(__VA_ARGS__)
 #elif LEVEL_DEFAULT == LEVEL_WARN
-    #define LOGV(fmt,...) do{}while(0)
-    #define LOGD(fmt,...) do{}while(0)
-    #define LOGI(fmt,...) do{}while(0)
-    #define LOGW(fmt,...) LOG_WRAN(fmt,__VA_ARGS__)
-    #define LOGE(fmt,...) LOG_ERROR(fmt,__VA_ARGS__)
+    #define LOGV(...) do{}while(0)
+    #define LOGD(...) do{}while(0)
+    #define LOGI(...) do{}while(0)
+    #define LOGW(...) LOG_WRAN(__VA_ARGS__)
+    #define LOGE(...) LOG_ERROR(__VA_ARGS__)
 #elif LEVEL_DEFAULT == LEVEL_ERROR
-    #define LOGV(fmt,...) do{}while(0)
-    #define LOGD(fmt,...) do{}while(0)
-    #define LOGI(fmt,...) do{}while(0)
-    #define LOGW(fmt,...) do{}while(0)
-    #define LOGE(fmt,...) LOG_ERROR(fmt,__VA_ARGS__)
+    #define LOGV(...) do{}while(0)
+    #define LOGD(...) do{}while(0)
+    #define LOGI(...) do{}while(0)
+    #define LOGW(...) do{}while(0)
+    #define LOGE(...) LOG_ERROR(__VA_ARGS__)
 #else
-    #define LOGV(fmt,...) do{}while(0)
-    #define LOGD(fmt,...) do{}while(0)
-    #define LOGI(fmt,...) do{}while(0)
-    #define LOGW(fmt,...) do{}while(0)
-    #define LOGE(fmt,...) do{}while(0)
+    #define LOGV(...) do{}while(0)
+    #define LOGD(...) do{}while(0)
+    #define LOGI(...) do{}while(0)
+    #define LOGW(...) do{}while(0)
+    #define LOGE(...) do{}while(0)
 #endif
 
 #endif

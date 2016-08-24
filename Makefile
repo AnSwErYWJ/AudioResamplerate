@@ -1,4 +1,4 @@
-SRC = ./source/resamplerate.c ./source/samplerate.c ./source/src_sinc.c ./source/src_zoh.c ./source/src_linear.c 
+SRC = ./source/resamplerate.c ./source/samplerate.c ./source/src_sinc.c ./source/src_zoh.c ./source/src_linear.c ./source/log.c
 TARGET := ./bin/resamplerate
 
 CC := gcc
