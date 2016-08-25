@@ -11,18 +11,8 @@ Compile with code :
 make
 ```
 
-You can modify the [**config.ini**](https://github.com/AnSwErYWJ/AudioResamplerate/blob/master/config.ini) to configure the following parameters :
-```
+You can modify the [**config.ini**](https://github.com/AnSwErYWJ/AudioResamplerate/blob/master/config.ini) to configure the parameters.
 
-[audio]
-channels = 1;
-in_samrate = 16000;
-out_samrate = 48000;
-
-[other]
-input_file = ./audio/S16bit-LE-16kHz-Mono.pcm;
-output_file = ./audio/out.pcm;
-```
 Then,run your program with :
 ```
 sh init.sh
