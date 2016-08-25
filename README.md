@@ -26,6 +26,7 @@ sh init.sh
 ## Environment
 + Linux
 + POSIX C
++ Bash Shell
 
 ## Todo
 - [ ] Use TOML replace iniparser.
