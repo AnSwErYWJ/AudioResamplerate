@@ -5,6 +5,11 @@
 ## Introduction
 This is an audio resamplerate program based on [Secret Rabbit Code](http://www.mega-nerd.com/SRC/index.html) and [iniparser](http://ndevilla.free.fr/iniparser).
 
+## Install
+```
+git clone git@github.com:AnSwErYWJ/AudioResamplerate.git
+```
+
 ## Compile and Run
 Compile with code :
 ```
