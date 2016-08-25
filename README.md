@@ -31,6 +31,9 @@ git clone git@github.com:AnSwErYWJ/AudioResamplerate.git
 ## Todo
 - [ ] Use TOML replace iniparser.
 
+## Reference
+1. [Convering 8/16/32 bits/sample array to floats-array](http://stackoverflow.com/questions/4632502/waveinproc-windows-audio-question)
+
 ## About me
 [![forthebadge](http://forthebadge.com/images/badges/ages-20-30.svg)](http://forthebadge.com)
 - WebSite：[http://www.answerywj.com](http://www.answerywj.com)
