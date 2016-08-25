@@ -12,37 +12,32 @@
 #include "samplerate.h"
 #include "iniparser.h"
 #include "log.h"
+#include "resamplerate.h"
 
-#define N 1024 //items
-
-static char *NOTICE = "\n\
--------------------------------------------------------------------------------------------------\n\
-                    AudioResamplerate  Copyright (C) 2016  AnSwErYWJ\n\
-\n\
-        This program comes with ABSOLUTELY NO WARRANTY;\n\
-        This is free software, and you are welcome to redistribute it under certain conditions.\n\
--------------------------------------------------------------------------------------------------\n\
-";
-
-/* ini params */
-static int channels;
-static double ratio;
-static char *input;
-static char *output;
-
-static FILE *infp = NULL;
-static FILE *outfp = NULL;
-static short *tmpbuf = NULL;
-static float *inbuf = NULL;
-static float *outbuf = NULL;
-
-static size_t count_in;
-static size_t count_out;
-
+static AUDIO input,output;
 static dictionary *ini;
 static SRC_STATE *state;
 
+static int channels = 0;
+static double ratio = 0;
+
+static short *tmpbuf = NULL;
 static int error;
+
+/* new AUDIO obj */
+static AUDIO audio_new()
+{
+    AUDIO file;
+
+    file.path = NULL;
+    file.type = NULL;
+    file.fp = NULL;
+    file.buf = NULL;
+    file.items = 0;
+    file.sample_rate = 0;
+
+    return file;
+}
 
 static void get_conf()
 {
@@ -56,7 +51,7 @@ static void get_conf()
 
     /* get section numbers */
     int n = iniparser_getnsec(ini);
-    if (n != 2)
+    if (n != 3)
     {
         LOGE("config error!");
         exit(EXIT_FAILURE);
@@ -70,7 +65,13 @@ static void get_conf()
         exit(EXIT_FAILURE);
     }
     char *section_two = iniparser_getsecname(ini,1);
-    if (strcmp(section_two,"other") != 0)
+    if (strcmp(section_two,"path") != 0)
+    {
+        LOGE("config error!");
+        exit(EXIT_FAILURE);
+    }
+    char *section_three = iniparser_getsecname(ini,2);
+    if (strcmp(section_three,"type") != 0)
     {
         LOGE("config error!");
         exit(EXIT_FAILURE);
@@ -85,69 +86,110 @@ static void get_conf()
     }
 
     /* get ratio */
-    double out_samrate = iniparser_getdouble(ini,"audio:out_samrate",-1);
-    double in_samrate = iniparser_getdouble(ini,"audio:in_samrate",-1);
-    if (in_samrate <= 0 || out_samrate <= 0)
+    output.sample_rate = iniparser_getdouble(ini,"audio:output_sample_rate",-1);
+    input.sample_rate = iniparser_getdouble(ini,"audio:input_sample_rate",-1);
+    if (input.sample_rate <= 0 || output.sample_rate <= 0)
     {
-        LOGE("audio:samrate error!");
+        LOGE("audio:sample_rate error!");
         exit(EXIT_FAILURE);
     }
-    ratio = out_samrate/in_samrate;
+    ratio = output.sample_rate/input.sample_rate;
 
-    /* get input_file */
-    input = iniparser_getstring(ini,"other:input_file","null");
-    if (strcmp(input,"null") == 0 )
+    /* get file path */
+    input.path = iniparser_getstring(ini,"path:input","null");
+    if (strcmp(input.path,"null") == 0 )
     {
-        LOGE("other:input_file!");
+        LOGE("path:input!");
         exit(EXIT_FAILURE);
     }
 
-    /* get output_file */
-    output = iniparser_getstring(ini,"other:output_file","null");
-    if (strcmp(output,"null") == 0 )
+    output.path = iniparser_getstring(ini,"path:output","null");
+    if (strcmp(output.path,"null") == 0 )
     {
-        LOGE("other:output_file!");
+        LOGE("path:output!");
         exit(EXIT_FAILURE);
     }
+
+    /* get file type */
+    input.type = iniparser_getstring(ini,"type:input","null");
+    if (strcmp(input.type,"null") == 0 )
+    {
+        LOGE("type:input!");
+        exit(EXIT_FAILURE);
+    }
+
+    output.type = "PCM";
+}
+
+static void audio_del(AUDIO file)
+{
+    file.path = NULL;
+    file.type = NULL;
+
+    fclose(file.fp);
+
+    free(file.buf);
+    file.buf = NULL;
+
+    file.items = 0;
+    file.sample_rate = 0;
 }
 
 static void initialize()
 {
+
+    input = audio_new();
+    output = audio_new();
+
+    get_conf();
+
     /* open in and out audio */
-    infp = fopen(input,"rb");
-    if (infp == NULL)
+    input.fp = fopen(input.path,"rb");
+    if (input.fp == NULL)
     {
-        LOGE("open input file %s failed",input);
+        LOGE("open input file %s failed",input.path);
         exit(EXIT_FAILURE);
     }
 
-    outfp = fopen(output, "wb+");
-    if (outfp == NULL)
+    output.fp = fopen(output.path, "wb+");
+    if (output.fp == NULL)
     {
-        LOGE("create output file %s failed",output);
+        LOGE("create output file %s failed",output.path);
         exit(EXIT_FAILURE);
+    }
+
+    /* judge input file type */
+    if (strcmp(input.type,"pcm") != 0 || strcmp(input.type,"PCM") != 0 )
+    {
+        if (strcmp(input.type,"wav") == 0 || strcmp(input.type,"WAV") == 0 )
+            fseek(input.fp,44,SEEK_SET);
+        else
+        {
+            LOGE("input file type %s error",input.type);
+            exit(EXIT_FAILURE);
+        }
     }
 
     /* data items*/
-    count_in = N;
-    count_out = ((size_t)(ratio+1))*N;
+    input.items = 1024;
+    output.items = ((size_t)(ratio+1)) * input.items;
 
     /* calloc memory */
-    inbuf = (float *)calloc(1,count_in*sizeof(float));
-    if (inbuf == NULL)
+    input.buf = (float *)calloc(1,input.items*sizeof(float));
+    if (input.buf == NULL)
     {
-        LOGE("inbuf calloc failed");
+        LOGE("input buf calloc failed");
         exit(EXIT_FAILURE);
     }
 
-    outbuf = (float *)calloc(1,count_out*sizeof(float));
-    if (outbuf == NULL)
+    output.buf = (float *)calloc(1,output.items*sizeof(float));
+    if (output.buf == NULL)
     {
-        LOGE("outbuf calloc failed");
+        LOGE("output buf calloc failed");
         exit(EXIT_FAILURE);
     }
 
-    tmpbuf = (short *)calloc(1,count_out*sizeof(short));
+    tmpbuf = (short *)calloc(1,output.items*sizeof(short));
     if (tmpbuf == NULL)
     {
         LOGE("tmpbuf calloc failed");
@@ -167,48 +209,44 @@ static void resamplerate()
     SRC_DATA samplerate;
 
     /* samplerate params config */
-    samplerate.data_in = inbuf;
-    samplerate.input_frames = (long)count_in;
-    samplerate.data_out = outbuf;
+    samplerate.data_in = input.buf;
+    samplerate.input_frames = (long)input.items;
+    samplerate.data_out = output.buf;
     samplerate.end_of_input = 0;
     samplerate.src_ratio = ratio;
-    samplerate.output_frames = (long)count_out;
+    samplerate.output_frames = (long)output.items;
 
     size_t nread = 0;
 
     /* resamplerate */
-    while ((nread = fread(tmpbuf,sizeof(short),count_in,infp)) > 0)
+    while ((nread = fread(tmpbuf,sizeof(short),input.items,input.fp)) > 0)
     {
-        src_short_to_float_array (tmpbuf, inbuf, nread) ;
+        src_short_to_float_array (tmpbuf, input.buf, nread) ;
 
         if ((error = src_process (state, &samplerate)))
             LOGE("src_process failed : %s",src_strerror (error)) ;
 
-        memset(tmpbuf,'\0',count_out*sizeof(short));
-        src_float_to_short_array (outbuf, tmpbuf, samplerate.output_frames_gen);
+        memset(tmpbuf,'\0',output.items*sizeof(short));
+        src_float_to_short_array (output.buf, tmpbuf, samplerate.output_frames_gen);
 
-        if (fwrite(tmpbuf,sizeof(short),samplerate.output_frames_gen,outfp) != samplerate.output_frames_gen)
+        if (fwrite(tmpbuf,sizeof(short),samplerate.output_frames_gen,output.fp) != samplerate.output_frames_gen)
         {
             LOGE("fwrite failed");
             exit(EXIT_FAILURE);
         }
 
-        memset(inbuf,'\0',count_in*sizeof(short));
-        memset(outbuf,'\0',count_out*sizeof(short));
+        memset(input.buf,'\0',input.items*sizeof(float));
+        memset(output.buf,'\0',output.items*sizeof(float));
     }
 }
 
 static void clean_up()
 {
-    /* close audio file */
-    fclose(infp);
-    fclose(outfp);
+    /* free AUDIO obj */
+    audio_del(input);
+    audio_del(output);
 
-    /* free memory */
-    free(inbuf);
-    inbuf = NULL;
-    free(outbuf);
-    outbuf = NULL;
+    /* free tmp buf */
     free(tmpbuf);
     tmpbuf = NULL;
 
@@ -223,13 +261,11 @@ int main(int argc,const char *argv[])
 {
     printf("%s",NOTICE);
 
-    get_conf();
-
     initialize();
 
     resamplerate();
 
-    printf("output path : %s\n",output);
+    printf("output path : %s\n",output.path);
     printf("successfully\n");
 
     clean_up();

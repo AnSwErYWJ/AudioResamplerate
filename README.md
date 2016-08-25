@@ -11,7 +11,7 @@ Compile with code :
 make
 ```
 
-You can modify the [**config.ini**](https://github.com/AnSwErYWJ/AudioResamplerate/blob/master/config.ini) to configure the parameters.
+You can modify the [**config.ini**](https://github.com/AnSwErYWJ/AudioResamplerate/blob/master/config.ini) to configure the parameters, input PCM or WAV audio file, and output PCM audio file.
 
 Then,run your program with :
 ```
@@ -20,13 +20,10 @@ sh init.sh
 
 ## Environment
 + Linux
-+ Support for PCM audio
 + POSIX C
 
 ## Todo
-- [ ] Support more audio file type.
 - [ ] Use TOML replace iniparser.
-- [ ] Clip code.
 
 ## About me
 [![forthebadge](http://forthebadge.com/images/badges/ages-20-30.svg)](http://forthebadge.com)
