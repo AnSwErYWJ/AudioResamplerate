@@ -7,20 +7,20 @@ This is an audio resamplerate program based on [Secret Rabbit Code](http://www.m
 
 ## Installation
 ```
-git clone git@github.com:AnSwErYWJ/AudioResamplerate.git
+$ git clone git@github.com:AnSwErYWJ/AudioResamplerate.git
 ```
 
 ## Usage
 1. If you modify something in include/ or source/,please compile with project:
     ```
-    make all
+    $ make all
     ```
 
 2. Modify the [**config.ini**](https://github.com/AnSwErYWJ/AudioResamplerate/blob/master/config.ini) to configure the parameters, input support PCM or WAV audio files, and output only support PCM audio files.
 
 3. Then,run your program with :
     ```
-    sh init.sh
+    $ sh init.sh
     ```
 
 ## Environment
