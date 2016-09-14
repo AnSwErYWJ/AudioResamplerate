@@ -1,41 +1,69 @@
-DEFAULT_SRC = ./source/resamplerate.c
-INI_SRC = ./source/iniparser.c ./source/dictionary.c
-LOG_SRC = ./source/log.c
-RESAM_SRC = ./source/samplerate.c ./source/src_sinc.c ./source/src_zoh.c ./source/src_linear.c
-ALL_SRC = ./source/resamplerate.c ./source/samplerate.c ./source/src_sinc.c ./source/src_zoh.c ./source/src_linear.c ./source/log.c ./source/iniparser.c ./source/dictionary.c
+VPATH ?= ./source/:./include:.
 
-BIN = ./bin/resamplerate
-INI_TARGET = ./lib/libiniparser.so
-LOG_TARGET = ./lib/liblog.so
-RESAM_TARGET = ./lib/libresamplerate.so
-CLEAN_TARGET =
+SRC := ./source/resamplerate.c
+INI_SRC := ./source/iniparser.c ./source/dictionary.c
+LOG_SRC := ./source/log.c
+RESAM_SRC := ./source/samplerate.c ./source/src_sinc.c ./source/src_zoh.c ./source/src_linear.c
+
+OBJS := $(SRC:.c=.o)
+INI_OBJS := $(INI_SRC:.c=.o)
+LOG_OBJS := $(LOG_SRC:.c=.o)
+RESAM_OBJS := $(RESAM_SRC:.c=.o)
+
+TARGET := ./bin/resamplerate
+INI_TARGET := ./lib/libiniparser.so
+LOG_TARGET := ./lib/liblog.so
+RESAM_TARGET := ./lib/libresamplerate.so
 
 CC := gcc
-RM = rm -rf
-CFLAGS = -w -O2 -I ./include/ -o
+RM := -rm -rf
+CFLAGS := -Wall -O2
 LDFLAGS = -Llib -liniparser -llog -lresamplerate
 LDSHFLAGS = -fPIC -shared
+CPPFLAGS = -I./include/
+
+rely_src := $(SRC) $(INI_SRC) $(LOG_SRC) $(RESAM_SRC)
+rely := $(rely_src:.c=.d) # 生成.d文件
 
 #############################
 
-.PHONY: default iniparser log resamplerate all clean
+.PHONY: iniparser log resamplerate clean cleanall cleanso
 
-default:
-	$(CC) $(LDFLAGS) $(CFLAGS) $(BIN) $(DEFAULT_SRC)
+all : $(TARGET)
+$(TARGET): $(OBJS)
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
-resamplerate:
-	$(CC) $(LDSHFLAGS) $(CFLAGS) $(RESAM_TARGET) $(RESAM_SRC)
+iniparser : $(INI_TARGET)
+$(INI_TARGET): $(INI_SRC)
+	$(CC) $(LDSHFLAGS) $(CFLAGS) $(CPPFLAGS) $^ -o $@
 
-iniparser:
-	$(CC) $(LDSHFLAGS) $(CFLAGS) $(INI_TARGET) $(INI_SRC)
+log : $(LOG_TARGET)
+$(LOG_TARGET): $(LOG_SRC)
+	$(CC) $(LDSHFLAGS) $(CFLAGS) $(CPPFLAGS) $^ -o $@
 
-log:
-	$(CC) $(LDSHFLAGS) $(CFLAGS) $(LOG_TARGET) $(LOG_SRC)
+resamplerate : $(RESAM_TARGET)
+$(RESAM_TARGET): $(RESAM_SRC)
+	$(CC) $(LDSHFLAGS) $(CFLAGS) $(CPPFLAGS) $^ -o $@
 
-all:
-	$(CC) $(CFLAGS) $(BIN) $(ALL_SRC)
+# 自动生成依赖
+$(rely): $(rely_src)
+	@set -e; rm -f $@ &> /dev/null; # 设置错误检查,若下面有语句执行错误则直接退出, 删除旧的.d文件\
+	$(CC) -MM $(CPPFLAGS) $< > $@.$$$$; # 生成依赖文件 \
+	sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; # 替换临时文件 \
+	rm -f $@.$$$$ &> /dev/null # 删除临时文件
+
+# 替换
+-include $(rely)
+
+cleanall : clean cleanso
 
 clean:
-	$(RM) $(CLEAN_TARGET)
+	$(RM) $(OBJS) $(INI_OBJS) $(LOG_OBJS) $(RESAM_OBJS) $(rely) ./source/*.d.*
+
+cleanso:
+	$(RM) $(INI_TARGET) $(LOG_TARGET) $(RESAM_TARGET)
+
+
+
 
 
