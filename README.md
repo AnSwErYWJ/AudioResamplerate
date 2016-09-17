@@ -11,10 +11,16 @@ $ git clone git@github.com:AnSwErYWJ/AudioResamplerate.git
 ```
 
 ## Usage
-1. If you modify something in include/ or source/,please compile with project:
+1. Compile:
     ```
-    $ chmod +x configure.sh
-    $ sh configure.sh
+    ## to generate .so
+    $ make iniparser
+    $ make log
+    $ make resamplerate
+    ```
+    
+    ```
+    ## to generate bin
     $ make all
     ```
 
@@ -22,6 +28,8 @@ $ git clone git@github.com:AnSwErYWJ/AudioResamplerate.git
 
 3. Then,run your program with :
     ```
+    $ chmod +x configure.sh
+    $ sh configure.sh
     $ ./bin/resamplerate
     ```
 
