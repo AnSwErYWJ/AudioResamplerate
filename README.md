@@ -13,14 +13,14 @@ $ git clone git@github.com:AnSwErYWJ/AudioResamplerate.git
 ## Usage
 1. Compile:
     ```
-    ## to generate .so
+    # to generate .so
     $ make iniparser
     $ make log
     $ make resamplerate
     ```
     
     ```
-    ## to generate bin
+    # to generate bin
     $ make all
     ```
 
