@@ -3,11 +3,11 @@
 [![stable](http://badges.github.io/stability-badges/dist/stable.svg)](http://github.com/badges/stability-badges)
 
 ## Introduction
-This is an audio resamplerate program based on [Secret Rabbit Code](http://www.mega-nerd.com/SRC/index.html) and [iniparser](http://ndevilla.free.fr/iniparser).
+This is an audio resamplerate program for Linux,support PCM and WAV audio.
 
 ## Component
-- log : print log message.
-- iniparser : configure the program by ``config.ini`` dynamically.
+- log : print verbose/info/debug/warning/error message.
+- iniparser : configure the parameters by ``config.ini`` dynamically.
 - resamplerate : resamplerate your parogram.
 
 ## Installation
@@ -23,7 +23,7 @@ $ git clone git@github.com:AnSwErYWJ/AudioResamplerate.git
     $ make resamplerate
     ```
     
-2. If you modify the ``source/resamplerate.c``, compile bin :
+2. If you modify the ``source/resamplerate.c`` ``include/resamplerate``, compile bin :
 	```
 	$ make
 	``` 
@@ -44,7 +44,7 @@ $ git clone git@github.com:AnSwErYWJ/AudioResamplerate.git
 	output = null;
 	``` 
 
-4. Then,run your program with :
+4. Then,run the program with :
     ```
     $ export LD_LIBRARY_PATH=./lib:$LD_LIBRARY_PATH
     $ ./bin/resamplerate
@@ -59,6 +59,7 @@ $ git clone git@github.com:AnSwErYWJ/AudioResamplerate.git
 - [ ] Use TOML replace iniparser.
 
 ## Reference
+- [log](https://github.com/AnSwErYWJ/DogFood/tree/master/C/log)
 - [Secret Rabbit Code](http://www.mega-nerd.com/SRC/index.html)
 - [iniparser](http://ndevilla.free.fr/iniparser)
 - [Convering 8/16/32 bits/sample array to floats-array](http://stackoverflow.com/questions/4632502/waveinproc-windows-audio-question)
