@@ -59,6 +59,8 @@ $ git clone git@github.com:AnSwErYWJ/AudioResamplerate.git
 - [ ] Use TOML replace iniparser.
 
 ## Reference
+- [Secret Rabbit Code](http://www.mega-nerd.com/SRC/index.html)
+- [iniparser](http://ndevilla.free.fr/iniparser)
 - [Convering 8/16/32 bits/sample array to floats-array](http://stackoverflow.com/questions/4632502/waveinproc-windows-audio-question)
 
 ## About me
