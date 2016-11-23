@@ -5,31 +5,48 @@
 ## Introduction
 This is an audio resamplerate program based on [Secret Rabbit Code](http://www.mega-nerd.com/SRC/index.html) and [iniparser](http://ndevilla.free.fr/iniparser).
 
+## Component
+- log : print log message.
+- iniparser : configure the program by ``config.ini`` dynamically.
+- resamplerate : resamplerate your parogram.
+
 ## Installation
 ```
 $ git clone git@github.com:AnSwErYWJ/AudioResamplerate.git
 ```
 
 ## Usage
-1. Compile:
+1. If you modify the file of three components, compile three dynamic library of components : 
     ```
-    # to generate .so
-    $ make iniparser
     $ make log
+    $ make iniparser
     $ make resamplerate
     ```
     
-    ```
-    # to generate bin
-    $ make all
-    ```
+2. If you modify the ``source/resamplerate.c``, compile bin :
+	```
+	$ make
+	``` 
 
-2. Modify the [**config.ini**](https://github.com/AnSwErYWJ/AudioResamplerate/blob/master/config.ini) to configure the parameters, input support PCM or WAV audio files, and output only support PCM audio files.
+3. Modify the ``config.ini`` to configure the parameters, input support PCM or WAV audio files, and output only support PCM audio files, such as :
+	```
+	[audio]
+	channels = 1;
+	input_sample_rate = 16000;
+	output_sample_rate = 48000;
 
-3. Then,run your program with :
+	[path]
+	input = ./audio/S16bit-LE-16kHz-Mono.pcm;
+	output = ./audio/out.pcm;
+
+	[type]
+	input = wav;
+	output = null;
+	``` 
+
+4. Then,run your program with :
     ```
-    $ chmod +x configure.sh
-    $ sh configure.sh
+    $ export LD_LIBRARY_PATH=./lib:$LD_LIBRARY_PATH
     $ ./bin/resamplerate
     ```
 
