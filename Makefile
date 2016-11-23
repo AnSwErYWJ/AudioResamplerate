@@ -21,7 +21,7 @@ RM := -rm -rf
 CFLAGS := -Wall -O2 -m64 -D_GUN_SOURCE
 LDFLAGS = -Llib -liniparser -llog -lresamplerate
 LDSHFLAGS = -fPIC -shared
-CPPFLAGS = -I./include/log -I ./include/iniparser/ -I ./include/resamplerate/
+CPPFLAGS = -I./include/log -I ./include/iniparser/ -I ./include/resamplerate/ -I ./include/
 
 rely := $(All_SRC:.c=.d) # 生成.d文件
 tmp := ./source/*.d.*
