@@ -1,9 +1,7 @@
-VPATH ?= ./source/:./include:.
-
 SRC := ./source/resamplerate.c
-INI_SRC := ./source/iniparser.c ./source/dictionary.c
-LOG_SRC := ./source/log.c
-RESAM_SRC := ./source/samplerate.c ./source/src_sinc.c ./source/src_zoh.c ./source/src_linear.c
+INI_SRC := ./source/iniparser/iniparser.c ./source/iniparser/dictionary.c
+LOG_SRC := ./source/log/log.c
+RESAM_SRC := ./source/resamplerate/samplerate.c ./source/resamplerate/src_sinc.c ./source/resamplerate/src_zoh.c ./source/resamplerate/src_linear.c
 All_SRC = $(SRC) $(INI_SRC) $(LOG_SRC) $(RESAM_SRC)
 
 OBJS := $(SRC:.c=.o)
@@ -18,22 +16,22 @@ LOG_TARGET := ./lib/liblog.so
 RESAM_TARGET := ./lib/libresamplerate.so
 
 CC := gcc
+PLUS := g++
 RM := -rm -rf
-CFLAGS := -Wall -O2
+CFLAGS := -Wall -O2 -m64 -D_GUN_SOURCE
 LDFLAGS = -Llib -liniparser -llog -lresamplerate
 LDSHFLAGS = -fPIC -shared
-CPPFLAGS = -I./include/
+CPPFLAGS = -I./include/log -I ./include/iniparser/ -I ./include/resamplerate/
 
 rely := $(All_SRC:.c=.d) # 生成.d文件
 tmp := ./source/*.d.*
 
 #############################
 
-.PHONY: all iniparser log resamplerate clean cleanall cleanso
+.PHONY: iniparser log resamplerate clean cleanall cleanso
 
-all : $(TARGET)
-$(TARGET): $(All_OBJS)
-	$(CC) $(CFLAGS) $(LDFLAGS) $(CPPFLAGS) $^ -o $@
+$(TARGET): $(OBJS)
+	$(PLUS) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
 iniparser : $(INI_TARGET)
 $(INI_TARGET): $(INI_SRC)
