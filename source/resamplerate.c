@@ -118,7 +118,12 @@ static void get_conf()
         exit(EXIT_FAILURE);
     }
 
-    output.type = "PCM";
+    output.type = iniparser_getstring(ini,"type:output","null");
+    if (strcmp(output.type,"null") == 0 )
+    {
+        LOGE("type:output!");
+        exit(EXIT_FAILURE);
+    }
 }
 
 static void audio_del(AUDIO file)
@@ -165,7 +170,18 @@ static void initialize()
             fseek(input.fp,44,SEEK_SET);
         else
         {
-            LOGE("input file type %s error",input.type);
+            LOGE("input file type %s invalid",input.type);
+            exit(EXIT_FAILURE);
+        }
+    }
+    
+    if (strcmp(output.type,"pcm") != 0 || strcmp(output.type,"PCM") != 0 )
+    {
+        if (strcmp(output.type,"wav") == 0 || strcmp(output.type,"WAV") == 0 )
+            fseek(output.fp,44,SEEK_SET);
+        else
+        {
+            LOGE("output file type %s invalid",input.type);
             exit(EXIT_FAILURE);
         }
     }
