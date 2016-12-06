@@ -32,8 +32,6 @@ typedef struct _audio_file{
 static AUDIO audio_new();
 static void audio_del(AUDIO file);
 static void get_conf();
-
-//**********OUT API******************
 static void initialize();
 static void resamplerate();
 static void clean_up();
