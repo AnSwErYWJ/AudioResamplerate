@@ -76,7 +76,7 @@ $ git clone git@github.com:AnSwErYWJ/AudioResamplerate.git
 [![GPL Licence](https://badges.frapsoft.com/os/gpl/gpl.svg?v=103)](https://opensource.org/licenses/GPL-3.0/)
 
     AudioResamplerate
-    Copyright (C) 2016  AnSwErYWJ
+    Copyright (C) 2016-2017  AnSwErYWJ
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
