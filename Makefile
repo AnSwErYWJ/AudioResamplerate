@@ -1,34 +1,37 @@
-SRC := ./source/resamplerate.c
-INI_SRC := ./source/iniparser/iniparser.c ./source/iniparser/dictionary.c
-LOG_SRC := ./source/log/log.c
-RESAM_SRC := ./source/resamplerate/samplerate.c ./source/resamplerate/src_sinc.c ./source/resamplerate/src_zoh.c ./source/resamplerate/src_linear.c
-All_SRC = $(SRC) $(INI_SRC) $(LOG_SRC) $(RESAM_SRC)
+SRC := ./src/resamplerate.c
+INI_SRC := ./src/iniparser/iniparser.c ./src/iniparser/dictionary.c
+LOG_SRC := ./src/log/log.c
+RESAM_SRC := ./src/resamplerate/samplerate.c ./src/resamplerate/src_sinc.c ./src/resamplerate/src_zoh.c ./src/resamplerate/src_linear.c 
+WAVEH_SRC := ./src/waveHeader/handle_wave.c
+All_SRC = $(SRC) $(INI_SRC) $(LOG_SRC) $(RESAM_SRC) $(WAVEH_SRC)
 
 OBJS := $(SRC:.c=.o)
 INI_OBJS := $(INI_SRC:.c=.o)
 LOG_OBJS := $(LOG_SRC:.c=.o)
 RESAM_OBJS := $(RESAM_SRC:.c=.o)
-All_OBJS := $(SRC:.c=.o) $(INI_SRC:.c=.o) $(LOG_SRC:.c=.o) $(RESAM_SRC:.c=.o)
+WAVEH_OBJS := $(WAVEH_SRC:.c=.o)
+All_OBJS := $(OBJS) $(INI_OBJS) $(LOG_OBJS) $(RESAM_OBJS) $(WAVEH_OBJS)
 
 TARGET := ./bin/resamplerate
 INI_TARGET := ./lib/libiniparser.so
 LOG_TARGET := ./lib/liblog.so
 RESAM_TARGET := ./lib/libresamplerate.so
+WAVEH_TARGET := ./lib/libwaveheader.so
 
 CC := gcc
 PLUS := g++
 RM := -rm -rf
 CFLAGS := -Wall -O2 -m64 -D_GUN_SOURCE
-LDFLAGS = -Llib -liniparser -llog -lresamplerate
+LDFLAGS = -Llib -liniparser -llog -lresamplerate -lwaveheader
 LDSHFLAGS = -fPIC -shared
-CPPFLAGS = -I./include/log -I ./include/iniparser/ -I ./include/resamplerate/ -I ./include/
+CPPFLAGS = -I./include/log -I ./include/iniparser/ -I ./include/resamplerate/ -I ./include/waveHeader/ -I ./include/
 
 rely := $(All_SRC:.c=.d) # 生成.d文件
-tmp := ./source/*.d.*
+tmp := ./src/*.d.*
 
 #############################
 
-.PHONY: iniparser log resamplerate clean cleanall cleanso
+.PHONY: iniparser log resamplerate waveheader clean cleanall cleanso
 
 $(TARGET): $(OBJS)
 	$(PLUS) $(CFLAGS) $(LDFLAGS) $^ -o $@
@@ -43,6 +46,10 @@ $(LOG_TARGET): $(LOG_SRC)
 
 resamplerate : $(RESAM_TARGET)
 $(RESAM_TARGET): $(RESAM_SRC)
+	$(CC) $(LDSHFLAGS) $(CFLAGS) $(CPPFLAGS) $^ -o $@
+
+waveheader : $(WAVEH_TARGET)
+$(WAVEH_TARGET): $(WAVEH_SRC)
 	$(CC) $(LDSHFLAGS) $(CFLAGS) $(CPPFLAGS) $^ -o $@
 
 # 自动生成依赖
@@ -61,5 +68,5 @@ clean:
 	$(RM) $(All_OBJS) $(rely) $(tmp) $(TARGET)
 
 cleanso:
-	$(RM) $(INI_TARGET) $(LOG_TARGET) $(RESAM_TARGET)
+	$(RM) $(INI_TARGET) $(LOG_TARGET) $(RESAM_TARGET) $(WAVEH_TARGET)
 
