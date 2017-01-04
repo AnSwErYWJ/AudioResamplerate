@@ -28,10 +28,8 @@ typedef struct
     int   data_datasize;                    // data chunk size,pcm_size - 44
 }WaveHeader_t;
 
-/* read and write integer from file stream */
-int get_int(FILE *fp);
-int put_uint(int i,FILE *fp);
-short int get_sint(FILE *fp);
-short int put_sint(short int i,FILE *fp);
+int read_wavheader(FILE *fp,WaveHeader_t *wavheader);
+int write_wavheader(FILE *fp,WaveHeader_t wavheader);
+void print_wavheader(WaveHeader_t wavheader);
 
 #endif
