@@ -3,7 +3,7 @@
 [![stable](http://badges.github.io/stability-badges/dist/stable.svg)](http://github.com/badges/stability-badges)
 
 ## Introduction
-This is an audio resamplerate program for Linux,support PCM and WAV audio(mone or stereo),bits of each sample is 16 default.
+This is an audio resamplerate program for Linux,support PCM and WAV audio(mone or stereo),bits of each sample is **16** default.
 
 ## Component
 - log : print verbose/info/debug/warning/error message.
