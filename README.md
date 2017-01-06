@@ -3,7 +3,7 @@
 [![stable](http://badges.github.io/stability-badges/dist/stable.svg)](http://github.com/badges/stability-badges)
 
 ## Introduction
-This is an audio resamplerate program for Linux,support PCM and WAV audio.
+This is an audio resamplerate program for Linux,support PCM and WAV audio(mone or stereo),bits of each sample is 16 default.
 
 ## Component
 - log : print verbose/info/debug/warning/error message.
@@ -18,7 +18,6 @@ $ git clone git@github.com:AnSwErYWJ/AudioResamplerate.git
 ## Usage
 1. If you modify the file of three components, compile three dynamic library of components : 
     ```
-    $ make log
     $ make iniparser
     $ make resamplerate
     ```
