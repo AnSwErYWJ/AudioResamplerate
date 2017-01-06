@@ -1,28 +1,27 @@
-SRC := ./src/resamplerate.c
+SRC := ./src/resamplerate.c ./src/log/log.c
 INI_SRC := ./src/iniparser/iniparser.c ./src/iniparser/dictionary.c
-LOG_SRC := ./src/log/log.c
 RESAM_SRC := ./src/resamplerate/samplerate.c ./src/resamplerate/src_sinc.c ./src/resamplerate/src_zoh.c ./src/resamplerate/src_linear.c 
 WAVEH_SRC := ./src/waveHeader/handle_wave.c
-All_SRC = $(SRC) $(INI_SRC) $(LOG_SRC) $(RESAM_SRC) $(WAVEH_SRC)
+All_SRC = $(SRC) $(INI_SRC) $(RESAM_SRC) $(WAVEH_SRC)
 
 OBJS := $(SRC:.c=.o)
 INI_OBJS := $(INI_SRC:.c=.o)
-LOG_OBJS := $(LOG_SRC:.c=.o)
 RESAM_OBJS := $(RESAM_SRC:.c=.o)
 WAVEH_OBJS := $(WAVEH_SRC:.c=.o)
-All_OBJS := $(OBJS) $(INI_OBJS) $(LOG_OBJS) $(RESAM_OBJS) $(WAVEH_OBJS)
+All_OBJS := $(OBJS) $(INI_OBJS) $(RESAM_OBJS) $(WAVEH_OBJS)
 
 TARGET := ./bin/resamplerate
 INI_TARGET := ./lib/libiniparser.so
-LOG_TARGET := ./lib/liblog.so
 RESAM_TARGET := ./lib/libresamplerate.so
 WAVEH_TARGET := ./lib/libwaveheader.so
+
+AUDIO := ./audio/result.pcm ./audio/result.wav
 
 CC := gcc
 PLUS := g++
 RM := -rm -rf
 CFLAGS := -Wall -O2 -m64 -D_GUN_SOURCE
-LDFLAGS = -Llib -liniparser -llog -lresamplerate -lwaveheader
+LDFLAGS = -Llib -liniparser -lresamplerate -lwaveheader
 LDSHFLAGS = -fPIC -shared
 CPPFLAGS = -I./include/log -I ./include/iniparser/ -I ./include/resamplerate/ -I ./include/waveHeader/ -I ./include/
 
@@ -31,17 +30,13 @@ tmp := ./src/*.d.*
 
 #############################
 
-.PHONY: iniparser log resamplerate waveheader clean cleanall cleanso
+.PHONY: iniparser resamplerate waveheader clean cleanall cleanso
 
 $(TARGET): $(OBJS)
-	$(PLUS) $(CFLAGS) $(LDFLAGS) $^ -o $@
+	$(PLUS) $(CFLAGS) $(LDFLAGS) $(CPPFLAGS) $^ -o $@
 
 iniparser : $(INI_TARGET)
 $(INI_TARGET): $(INI_SRC)
-	$(CC) $(LDSHFLAGS) $(CFLAGS) $(CPPFLAGS) $^ -o $@
-
-log : $(LOG_TARGET)
-$(LOG_TARGET): $(LOG_SRC)
 	$(CC) $(LDSHFLAGS) $(CFLAGS) $(CPPFLAGS) $^ -o $@
 
 resamplerate : $(RESAM_TARGET)
@@ -65,8 +60,8 @@ $(rely): $(All_SRC)
 cleanall : clean cleanso
 
 clean:
-	$(RM) $(All_OBJS) $(rely) $(tmp) $(TARGET)
+	$(RM) $(All_OBJS) $(rely) $(tmp) $(TARGET) $(AUDIO)
 
 cleanso:
-	$(RM) $(INI_TARGET) $(LOG_TARGET) $(RESAM_TARGET) $(WAVEH_TARGET)
+	$(RM) $(INI_TARGET) $(RESAM_TARGET) $(WAVEH_TARGET)
 

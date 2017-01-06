@@ -8,11 +8,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 
 #include "samplerate.h"
 #include "iniparser.h"
 #include "log.h"
 #include "resamplerate.h"
+#include "handle_wave.h"
 
 static AUDIO input,output;
 static dictionary *ini;
@@ -21,8 +23,20 @@ static SRC_STATE *state;
 static int channels = 0;
 static double ratio = 0;
 
+static int tmp_frame_len = 0;
 static short *tmpbuf = NULL;
 static int error;
+
+static int file_size(const char *filepath)
+{
+    struct stat statbuf;
+
+    stat(filepath,&statbuf);
+
+    int size = statbuf.st_size;
+
+    return size;
+}
 
 /* new AUDIO obj */
 static AUDIO audio_new()
@@ -35,6 +49,7 @@ static AUDIO audio_new()
     file.buf = NULL;
     file.items = 0;
     file.sample_rate = 0;
+    file.frame_len = 0;
 
     return file;
 }
@@ -79,9 +94,9 @@ static void get_conf()
 
     /* get channels */
     channels = iniparser_getint(ini,"audio:channels",-1);
-    if (channels <= 0)
+    if (channels <= 0 || channels > 2)
     {
-        LOGE("audio:channels error!");
+        LOGE("audio:channels error,only support mono or stereo!");
         exit(EXIT_FAILURE);
     }
 
@@ -126,18 +141,19 @@ static void get_conf()
     }
 }
 
-static void audio_del(AUDIO file)
+static void audio_del(AUDIO *file)
 {
-    file.path = NULL;
-    file.type = NULL;
+    file->path = NULL;
+    file->type = NULL;
 
-    fclose(file.fp);
+    fclose(file->fp);
 
-    free(file.buf);
-    file.buf = NULL;
+    free(file->buf);
+    file->buf = NULL;
 
-    file.items = 0;
-    file.sample_rate = 0;
+    file->items = 0;
+    file->sample_rate = 0;
+    file->frame_len = 0;
 }
 
 static void initialize()
@@ -163,49 +179,67 @@ static void initialize()
         exit(EXIT_FAILURE);
     }
 
-    /* judge input file type */
-    if (strcmp(input.type,"pcm") != 0 || strcmp(input.type,"PCM") != 0 )
-    {
-        if (strcmp(input.type,"wav") == 0 || strcmp(input.type,"WAV") == 0 )
-            fseek(input.fp,44,SEEK_SET);
-        else
-        {
-            LOGE("input file type %s invalid",input.type);
-            exit(EXIT_FAILURE);
-        }
-    }
-    
-    if (strcmp(output.type,"pcm") != 0 || strcmp(output.type,"PCM") != 0 )
-    {
-        if (strcmp(output.type,"wav") == 0 || strcmp(output.type,"WAV") == 0 )
-            fseek(output.fp,44,SEEK_SET);
-        else
-        {
-            LOGE("output file type %s invalid",input.type);
-            exit(EXIT_FAILURE);
-        }
-    }
-
     /* data items*/
     input.items = 1024;
     output.items = ((size_t)(ratio+1)) * input.items;
 
+    int size;
+    /* judge input file type */
+    if (strcmp(input.type,"pcm") == 0 || strcmp(input.type,"PCM") == 0 )
+    	size = file_size(input.path) * ratio;
+    else if (strcmp(input.type,"wav") == 0 || strcmp(input.type,"WAV") == 0 )
+    {
+    	size = (file_size(input.path)-44) * ratio;
+    	fseek(input.fp,44,SEEK_SET);
+    }
+    else
+    {
+    	LOGE("input file type %s invalid",input.type);
+        exit(EXIT_FAILURE);
+    }
+
+    /* judge output file type */
+    if (strcmp(output.type,"pcm") == 0 || strcmp(output.type,"PCM") == 0 ){}
+    else if (strcmp(output.type,"wav") == 0 || strcmp(output.type,"WAV") == 0 )
+    {
+    	WaveHeader_t wavheader;
+    	init_wavheader(&wavheader);
+
+        wavheader.riff_datasize = size + 44 - 8;
+        wavheader.fmt_channels = channels;
+        wavheader.fmt_sample_rate = output.sample_rate;
+        wavheader.fmt_avg_bytes_per_sec = wavheader.fmt_sample_rate * wavheader.fmt_channels * wavheader.fmt_bit_per_sample / 8;
+        wavheader.fmt_block_align = wavheader.fmt_bit_per_sample * wavheader.fmt_channels / 8;
+
+        wavheader.data_datasize = size;
+
+        write_wavheader(output.fp,wavheader);
+    }
+    else
+    {
+    	LOGE("output file type %s invalid",input.type);
+        exit(EXIT_FAILURE);
+    }
+
+    input.frame_len = sizeof(float)*channels;
+    output.frame_len = sizeof(float)*channels;
+    tmp_frame_len = sizeof(short)*channels;
     /* calloc memory */
-    input.buf = (float *)calloc(1,input.items*sizeof(float));
+    input.buf = (float *)calloc(1,input.items*input.frame_len);
     if (input.buf == NULL)
     {
         LOGE("input buf calloc failed");
         exit(EXIT_FAILURE);
     }
 
-    output.buf = (float *)calloc(1,output.items*sizeof(float));
+    output.buf = (float *)calloc(1,output.items*output.frame_len);
     if (output.buf == NULL)
     {
         LOGE("output buf calloc failed");
         exit(EXIT_FAILURE);
     }
 
-    tmpbuf = (short *)calloc(1,output.items*sizeof(short));
+    tmpbuf = (short *)calloc(1,output.items*tmp_frame_len);
     if (tmpbuf == NULL)
     {
         LOGE("tmpbuf calloc failed");
@@ -235,32 +269,33 @@ static void resamplerate()
     size_t nread = 0;
 
     /* resamplerate */
-    while ((nread = fread(tmpbuf,sizeof(short),input.items,input.fp)) > 0)
+    while ((nread = fread(tmpbuf,tmp_frame_len,input.items,input.fp)) > 0)
     {
-        src_short_to_float_array (tmpbuf, input.buf, nread) ;
+        src_short_to_float_array (tmpbuf, input.buf, nread*channels) ;
 
         if ((error = src_process (state, &samplerate)))
             LOGE("src_process failed : %s",src_strerror (error)) ;
 
-        memset(tmpbuf,'\0',output.items*sizeof(short));
-        src_float_to_short_array (output.buf, tmpbuf, samplerate.output_frames_gen);
+        memset(tmpbuf,'\0',output.items*tmp_frame_len);
+        src_float_to_short_array (output.buf, tmpbuf, samplerate.output_frames_gen*channels);
 
-        if (fwrite(tmpbuf,sizeof(short),samplerate.output_frames_gen,output.fp) != samplerate.output_frames_gen)
+        if (fwrite(tmpbuf,tmp_frame_len,samplerate.output_frames_gen,output.fp) != samplerate.output_frames_gen)
         {
             LOGE("fwrite failed");
             exit(EXIT_FAILURE);
         }
 
-        memset(input.buf,'\0',input.items*sizeof(float));
-        memset(output.buf,'\0',output.items*sizeof(float));
+        memset(input.buf,'\0',input.items*input.frame_len);
+        memset(output.buf,'\0',output.items*output.frame_len);
     }
+
 }
 
 static void clean_up()
 {
     /* free AUDIO obj */
-    audio_del(input);
-    audio_del(output);
+    audio_del(&input);
+    audio_del(&output);
 
     /* free tmp buf */
     free(tmpbuf);
@@ -275,6 +310,7 @@ static void clean_up()
 
 int main(int argc,const char *argv[])
 {
+	/* copyright */
     printf("%s",NOTICE);
 
     initialize();

@@ -71,6 +71,26 @@ static short int put_sint(short int i,FILE *fp)
     return i;
 }
 
+void init_wavheader(WaveHeader_t *wavheader)
+{
+	sprintf(wavheader->riff_id,"RIFF");
+    wavheader->riff_datasize = -1;
+
+    sprintf(wavheader->riff_type,"WAVE");
+
+    sprintf(wavheader->fmt_id,"fmt ");
+    wavheader->fmt_datasize = 16;
+    wavheader->fmt_compression_code = 1;
+    wavheader->fmt_channels = -1;
+    wavheader->fmt_sample_rate = -1;
+    wavheader->fmt_avg_bytes_per_sec = -1;
+    wavheader->fmt_block_align = -1;
+    wavheader->fmt_bit_per_sample = 16;
+
+    sprintf(wavheader->data_id,"data");
+    wavheader->data_datasize = -1;
+}
+
 int read_wavheader(FILE *fp,WaveHeader_t *wavheader)
 {
 	if (fp ==NULL)

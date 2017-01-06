@@ -13,8 +13,13 @@
 
 int main(int argc,char *argv[])
 {
+    WaveHeader_t w;
+    init_wavheader(&w);
+    print_wavheader(w);
+
+
 	WaveHeader_t wavheader;
-	FILE *fp = NULL;
+    FILE *fp = NULL;
 
     fp = fopen(filepath, "rb");
     if (fp == NULL)
@@ -25,7 +30,7 @@ int main(int argc,char *argv[])
     
     /* read */
     if (read_wavheader(fp,&wavheader) == -1)
-        fprintf(stderr,"read %s header failed.\n");
+        fprintf(stderr,"read header failed.\n");
     
     fclose(fp);
     fp = NULL;

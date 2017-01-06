@@ -28,6 +28,7 @@ typedef struct
     int   data_datasize;                    // data chunk size,pcm_size - 44
 }WaveHeader_t;
 
+void init_wavheader(WaveHeader_t *wavheader);
 int read_wavheader(FILE *fp,WaveHeader_t *wavheader);
 int write_wavheader(FILE *fp,WaveHeader_t wavheader);
 void print_wavheader(WaveHeader_t wavheader);
