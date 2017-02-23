@@ -10,7 +10,7 @@ RESAM_OBJS := $(RESAM_SRC:.c=.o)
 WAVEH_OBJS := $(WAVEH_SRC:.c=.o)
 All_OBJS := $(OBJS) $(INI_OBJS) $(RESAM_OBJS) $(WAVEH_OBJS)
 
-TARGET := ./bin/resamplerate
+TARGET := ./resamplerate
 INI_TARGET := ./lib/libiniparser.so
 RESAM_TARGET := ./lib/libresamplerate.so
 WAVEH_TARGET := ./lib/libwaveheader.so
