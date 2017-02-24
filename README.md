@@ -72,7 +72,6 @@ $ git clone git@github.com:AnSwErYWJ/AudioResamplerate.git
 - Weibo：[@AnSwEr不是答案](http://weibo.com/1783591593)
 
 ## Copyright and License
-## Copyright and License
 BSD 2-Clause License
 
 Copyright (c) 2016-2017, AnSwErYWJ(Weijie Yuan),yuanweijie1993@gmail.com
