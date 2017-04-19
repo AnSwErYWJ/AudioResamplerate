@@ -46,7 +46,7 @@ $ git clone git@github.com:AnSwErYWJ/AudioResamplerate.git
 4. Then,run the program with :
     ```
     $ export LD_LIBRARY_PATH=./lib:$LD_LIBRARY_PATH
-    $ ./bin/resamplerate
+    $ ./resamplerate
     ```
 
 ## Environment
