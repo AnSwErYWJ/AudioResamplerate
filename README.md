@@ -74,7 +74,7 @@ $ git clone git@github.com:AnSwErYWJ/AudioResamplerate.git
 ## Copyright and License
 BSD 2-Clause License
 
-Copyright (c) 2016-2017, AnSwErYWJ(Weijie Yuan),yuanweijie1993@gmail.com
+Copyright (c) 2016-2018, AnSwErYWJ(Weijie Yuan),yuanweijie1993@gmail.com
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
