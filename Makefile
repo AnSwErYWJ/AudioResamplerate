@@ -21,7 +21,7 @@ CC := gcc
 PLUS := g++
 RM := -rm -rf
 CFLAGS := -Wall -O2 -m64 -D_GUN_SOURCE
-LDFLAGS = -Llib -liniparser -lresamplerate -lwaveheader
+LDFLAGS = -L./lib -liniparser -lresamplerate -lwaveheader
 LDSHFLAGS = -fPIC -shared
 CPPFLAGS = -I./include/log -I ./include/iniparser/ -I ./include/resamplerate/ -I ./include/waveHeader/ -I ./include/
 
@@ -33,7 +33,7 @@ tmp := ./src/*.d.*
 .PHONY: iniparser resamplerate waveheader clean cleanall cleanso
 
 $(TARGET): $(OBJS)
-	$(PLUS) $(CFLAGS) $(LDFLAGS) $(CPPFLAGS) $^ -o $@
+	$(PLUS) $(CFLAGS) $(CPPFLAGS) $^ $(LDFLAGS) -o $@
 
 iniparser : $(INI_TARGET)
 $(INI_TARGET): $(INI_SRC)
