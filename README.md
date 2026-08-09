@@ -1,3 +1,5 @@
+
+
 # AudioResamplerate 
 [![Open Source Love](https://badges.frapsoft.com/os/v1/open-source.png?v=103)](https://github.com/ellerbrock/open-source-badge/)
 [![stable](http://badges.github.io/stability-badges/dist/stable.svg)](http://github.com/badges/stability-badges)
@@ -22,7 +24,7 @@ $ git clone git@github.com:AnSwErYWJ/AudioResamplerate.git
     $ make resamplerate
     ```
     
-2. If you modify the ``source/resamplerate.c`` ``include/resamplerate``, compile bin :
+2. If you modify the ``src/resamplerate.c`` ``include/resamplerate``, compile bin :
 	```
 	$ make
 	``` 
